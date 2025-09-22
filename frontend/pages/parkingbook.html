@@ -1,0 +1,389 @@
+<!-- parking.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parking Booking - Stashly</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap and Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="../css/style.css" rel="stylesheet">
+    <style>
+        .booking-form-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .booking-hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url("../assets/homebgimage.jpg");
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 80px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="../index.html">
+                <div class="logo-container me-2">
+                    <img src="../assets/airattix-logo.png" alt="Stashly Logo" height="30">
+                </div>
+                <span class="brand-text">Stashly</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.html">About Us</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="storage.html">Goods Storage</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="parking.html">Car Parking</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <a href="login.html" class="btn btn-outline-light me-2">Login</a>
+                    <a href="login.html#register" class="btn btn-primary">Register</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Booking Section -->
+    <section class="booking-hero">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-10 mx-auto">
+                    <div class="booking-form-container">
+                        <h2 class="text-center mb-4">Book Your Parking Space</h2>
+                        <!-- Alert containers for success and error messages -->
+                        <div class="alert alert-success" id="successAlert" style="display: none;"></div>
+                        <div class="alert alert-danger" id="errorAlert" style="display: none;"></div>
+                        
+                        <form id="bookingForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="name" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="name" required>
+                                    <div class="invalid-feedback" id="nameFeedback">
+                                        Please enter your full name.
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="email" required>
+                                    <div class="invalid-feedback" id="emailFeedback">
+                                        Please enter a valid email address.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="phone" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="phone" required pattern="[0-9]{10}" placeholder="10-digit phone number">
+                                    <div class="invalid-feedback" id="phoneFeedback">
+                                        Please enter a valid 10-digit phone number.
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="vehicle" class="form-label">Vehicle Type</label>
+                                    <select class="form-select" id="vehicle" required>
+                                        <option value="">Select Vehicle Type</option>
+                                        <option value="car">Car</option>
+                                        <option value="motorcycle">Motorcycle</option>
+                                        <option value="truck">Truck</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                    <div class="invalid-feedback" id="vehicleFeedback">
+                                        Please select a vehicle type.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="startDate" class="form-label">Start Date</label>
+                                    <input type="date" class="form-control" id="startDate" required min="">
+                                    <div class="invalid-feedback" id="startDateFeedback">
+                                        Please select a valid start date.
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="endDate" class="form-label">End Date</label>
+                                    <input type="date" class="form-control" id="endDate" required min="">
+                                    <div class="invalid-feedback" id="endDateFeedback">
+                                        End date must be after start date.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="licenseNumber" class="form-label">Vehicle License Number</label>
+                                    <input type="text" class="form-control" id="licenseNumber" required>
+                                    <div class="invalid-feedback" id="licenseNumberFeedback">
+                                        Please enter your vehicle license number.
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="vehicleColor" class="form-label">Vehicle Color</label>
+                                    <input type="text" class="form-control" id="vehicleColor">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="notes" class="form-label">Special Requirements</label>
+                                <textarea class="form-control" id="notes" rows="3"></textarea>
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-lg" id="submitButton">
+                                    <span id="submitText">Confirm Booking</span>
+                                    <span id="loadingSpinner" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true" style="display: none;"></span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer bg-dark text-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>About Stashly</h5>
+                    <p>Your trusted platform for storage and parking solutions. We connect people with space to those who need it.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="storage.html">Goods Storage</a></li>
+                        <li><a href="parking.html">Car Parking</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Contact Us</h5>
+                    <address>
+                        <i class="fas fa-envelope me-2"></i> support@Stashly.com<br>
+                        <i class="fas fa-phone me-2"></i> +1 234 567 8900<br>
+                        <i class="fas fa-map-marker-alt me-2"></i> 123 Tech Park, Bangalore, India
+                    </address>
+                    <div class="social-icons mt-3">
+                        <a href="#" class="me-2"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="me-2"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="me-2"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="me-2"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <p>&copy; 2024 Stashly. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set minimum date to today for start date input
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('startDate').min = today;
+            
+            // Update end date minimum based on start date
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            
+            startDateInput.addEventListener('change', function() {
+                endDateInput.min = startDateInput.value;
+                // If end date is before start date, reset it
+                if (endDateInput.value && endDateInput.value < startDateInput.value) {
+                    endDateInput.value = startDateInput.value;
+                }
+            });
+            
+            // Form submission and validation
+            const bookingForm = document.getElementById('bookingForm');
+            
+            bookingForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Reset all validation feedback
+                clearValidationFeedback();
+                
+                // Validate form
+                if (!validateForm()) {
+                    return false;
+                }
+                
+                // Show loading state
+                setLoadingState(true);
+                
+                // Get form values
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('email').value;
+                const phone = document.getElementById('phone').value;
+                const vehicleType = document.getElementById('vehicle').value;
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                const licenseNumber = document.getElementById('licenseNumber').value;
+                const vehicleColor = document.getElementById('vehicleColor').value;
+                const notes = document.getElementById('notes').value;
+                
+                try {
+                    // Call the API to create booking
+                    const result = await createBooking({
+                        name,
+                        email,
+                        phone,
+                        vehicleType,
+                        startDate,
+                        endDate,
+                        notes,
+                        bookingType: 'parking',
+                        licenseNumber,
+                        vehicleColor
+                    });
+                    
+                    // Show success message
+                    const successAlert = document.getElementById('successAlert');
+                    successAlert.textContent = 'Booking successful! Redirecting...';
+                    successAlert.style.display = 'block';
+                    document.getElementById('errorAlert').style.display = 'none';
+                    
+                    // Redirect to thank you page after a delay
+                    setTimeout(() => {
+                        window.location.href = 'thankyou.html';
+                    }, 1500);
+                } catch (error) {
+                    // Show error message
+                    const errorAlert = document.getElementById('errorAlert');
+                    errorAlert.textContent = 'Booking failed: ' + (error.message || 'Please try again later');
+                    errorAlert.style.display = 'block';
+                    document.getElementById('successAlert').style.display = 'none';
+                    setLoadingState(false);
+                }
+            });
+            
+            // Validation function
+            function validateForm() {
+                let isValid = true;
+                
+                // Validate name
+                const name = document.getElementById('name');
+                if (!name.value.trim()) {
+                    showInvalidFeedback(name, 'nameFeedback');
+                    isValid = false;
+                }
+                
+                // Validate email
+                const email = document.getElementById('email');
+                if (!email.value || !isValidEmail(email.value)) {
+                    showInvalidFeedback(email, 'emailFeedback');
+                    isValid = false;
+                }
+                
+                // Validate phone
+                const phone = document.getElementById('phone');
+                if (!phone.value || !isValidPhone(phone.value)) {
+                    showInvalidFeedback(phone, 'phoneFeedback');
+                    isValid = false;
+                }
+                
+                // Validate vehicle type
+                const vehicle = document.getElementById('vehicle');
+                if (!vehicle.value) {
+                    showInvalidFeedback(vehicle, 'vehicleFeedback');
+                    isValid = false;
+                }
+                
+                // Validate dates
+                const startDate = document.getElementById('startDate');
+                const endDate = document.getElementById('endDate');
+                
+                if (!startDate.value) {
+                    showInvalidFeedback(startDate, 'startDateFeedback');
+                    isValid = false;
+                }
+                
+                if (!endDate.value) {
+                    showInvalidFeedback(endDate, 'endDateFeedback');
+                    isValid = false;
+                } else if (endDate.value < startDate.value) {
+                    showInvalidFeedback(endDate, 'endDateFeedback');
+                    isValid = false;
+                }
+                
+                // Validate license number
+                const licenseNumber = document.getElementById('licenseNumber');
+                if (!licenseNumber.value.trim()) {
+                    showInvalidFeedback(licenseNumber, 'licenseNumberFeedback');
+                    isValid = false;
+                }
+                
+                return isValid;
+            }
+            
+            function clearValidationFeedback() {
+                const inputs = bookingForm.querySelectorAll('input, select, textarea');
+                inputs.forEach(input => {
+                    input.classList.remove('is-invalid');
+                });
+                
+                document.getElementById('successAlert').style.display = 'none';
+                document.getElementById('errorAlert').style.display = 'none';
+            }
+            
+            function showInvalidFeedback(element, feedbackId) {
+                element.classList.add('is-invalid');
+                document.getElementById(feedbackId).style.display = 'block';
+            }
+            
+            function setLoadingState(isLoading) {
+                const submitButton = document.getElementById('submitButton');
+                const submitText = document.getElementById('submitText');
+                const loadingSpinner = document.getElementById('loadingSpinner');
+                
+                if (isLoading) {
+                    submitButton.disabled = true;
+                    loadingSpinner.style.display = 'inline-block';
+                    submitText.textContent = 'Processing...';
+                } else {
+                    submitButton.disabled = false;
+                    loadingSpinner.style.display = 'none';
+                    submitText.textContent = 'Confirm Booking';
+                }
+            }
+            
+            // Helper functions
+            function isValidEmail(email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
+            }
+            
+            function isValidPhone(phone) {
+                const phoneRegex = /^[0-9]{10}$/;
+                return phoneRegex.test(phone);
+            }
+        });
+    </script>
+</body>
+</html>

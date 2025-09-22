@@ -1,0 +1,6 @@
+T1-
+PS E:\AIRPRO> node .\start-server.js
+T2-
+PS E:\AIRPRO\frontend> npx serve
+
+ 
