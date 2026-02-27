@@ -1,6 +1,6 @@
-# Airattix
+# STASHLY
 
-Airattix is a platform that connects people with storage and parking spaces to those who need them.
+Stashly is a platform that connects people with storage and parking spaces to those who need them.
 
 ## Project Structure
 
@@ -71,4 +71,4 @@ If you encounter any issues with the npm start command, you can also:
 
 ## Contact
 
-For any questions or issues, please contact support@airattix.com 
+For any questions or issues, please contact support@stashly.com 
