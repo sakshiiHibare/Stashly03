@@ -3,4 +3,20 @@ PS E:\AIRPRO> node .\start-server.js
 T2-
 PS E:\AIRPRO\frontend> npx serve
 
- 
+-Built a full-stack JavaScript web platform called Airattix for secure rental management of storage units and parking spots.
+
+-Backend powered by Node.js with Express.js, providing robust RESTful APIs for users, listings, and bookings.
+
+-Used MongoDB Atlas cloud database with Mongoose ORM for efficient and scalable data handling.
+
+-Implemented strong security with hashed passwords using bcrypt, and JWT for authentication and authorization.
+
+-Frontend currently designed with static HTML, CSS, and JavaScript interacting with APIs via AJAX calls.
+
+-Deployed frontend and backend separately on Render cloud platform, enabling accessible and scalable hosting.
+
+-Future-ready for frontend modernization by migrating to React SPA, improving user experience with client-side routing and clean URLs.
+
+
+
+This is a full-stack JavaScript project for managing storage and parking rentals. The backend runs on Node.js with Express.js, connected to MongoDB Atlas using Mongoose—providing secure REST APIs for user authentication, listings, and bookings. Passwords are hashed with bcrypt, and JWT handles authentication. The frontend is currently built with static HTML, CSS, and JavaScript that communicate with the backend via AJAX API calls. Both frontend and backend are deployed on Render cloud, with plans to upgrade the frontend into a React SPA for clean, modern client-side routing and a better user experience.

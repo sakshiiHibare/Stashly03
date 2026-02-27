@@ -1,0 +1,121 @@
+AIRATTIX (STASHLY) - FINAL VIVA PROJECT BRIEF (MERN)
+====================================================
+
+1) PROJECT OVERVIEW
+Airattix is a MERN-stack platform for renting Storage and Parking spaces.
+It connects space owners (hosts) with users who need secure and affordable space.
+
+Core modules:
+- User authentication and profile management
+- Listing creation and management (Storage/Parking)
+- Booking creation and tracking
+- Role-based control for User / Host / Admin
+
+
+2) MERN STACK USED
+MongoDB:
+- Database for Users, Listings, and Bookings
+- Managed with Mongoose schemas and validations
+
+Express.js + Node.js:
+- REST APIs for auth, listings, and bookings
+- Middleware for JWT auth, role checks, validation, and rate limiting
+
+React.js (Frontend Rebuild):
+- React application in `frontend-react/`
+- Routing handled with React Router
+- API calls handled with Axios
+- Reusable component-based UI structure
+
+
+3) SYSTEM FLOW (ARCHITECTURE)
+React Frontend  ->  Express/Node API  ->  MongoDB
+
+Important folders:
+- `backend/` (main API server)
+- `frontend-react/` (React frontend)
+- `src/backend/` (additional backend module structure)
+
+
+4) BACKEND DETAILS
+Main server: `backend/server.js`
+- Connects database
+- Loads middleware
+- Registers routes
+
+Key routes:
+- `backend/routes/userRoutes.js`
+  - Register, Login, Profile, Password Change, Forgot Password
+- `backend/routes/listingRoutes.js`
+  - CRUD for listings with filters and ownership/admin checks
+- `backend/routes/bookingRoutes.js`
+  - Booking creation, validation, availability checks, booking management
+
+Security:
+- `backend/middleware/auth.js`
+  - JWT token authentication
+  - Role-based authorization
+
+
+5) DATABASE MODELS
+- `User.js`
+  - User account fields, role, profile, encrypted password, login-attempt handling
+- `Listing.js`
+  - Unified model for parking/storage listings with price, amenities, status
+- `Booking.js`
+  - Booking details, type-wise fields, start/end date, status, payment status
+
+
+6) REACT FILES (GLANCE FOR VIVA)
+Main entry and routing:
+- `frontend-react/src/index.js`
+- `frontend-react/src/App.js`
+
+Components:
+- `components/Navbar.jsx`
+- `components/HeroSection.jsx`
+- `components/FeaturesSection.jsx`
+- `components/Footer.jsx`
+
+Pages:
+- `Pages/AboutPage.jsx`
+- `Pages/StoragePage.jsx`
+- `Pages/ParkingPage.jsx`
+- `Pages/Booking.jsx`
+- `Pages/Login.jsx`
+- `Pages/Register.jsx`
+
+
+7) KEY FEATURES TO TELL IN VIVA
+- MERN architecture with React frontend rebuild
+- JWT-based secure authentication
+- Role-based authorization (User/Host/Admin)
+- Express-validator based API input validation
+- Rate limiting for sensitive endpoints
+- Booking overlap/conflict handling
+- Listing verification workflow
+
+
+8) IMPORTANT API ENDPOINTS
+Users:
+- POST `/api/users/register`
+- POST `/api/users/login`
+- GET/PUT `/api/users/profile`
+
+Listings:
+- POST `/api/listings`
+- GET `/api/listings`
+- GET `/api/listings/:id`
+- PUT `/api/listings/:id`
+- DELETE `/api/listings/:id`
+
+Bookings:
+- POST `/api/bookings`
+- GET `/api/bookings` (admin)
+- GET `/api/bookings/:id`
+- PUT `/api/bookings/:id` (admin)
+- DELETE `/api/bookings/:id`
+
+
+9) FINAL ONE-LINE VIVA INTRO
+"Airattix is a MERN-stack rental platform where a React frontend communicates with a Node/Express API and MongoDB database to provide secure user authentication, listing management, and parking/storage booking services."
