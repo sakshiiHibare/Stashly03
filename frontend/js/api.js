@@ -1,7 +1,7 @@
 // API utility functions for Airattix frontend
 
 // Base API URL
-const API_URL = 'http://localhost:5500/api';
+const API_URL = 'https://stashly03.onrender.com';
 // User Registration
 async function registerUser(userData) {
   try {
