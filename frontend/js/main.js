@@ -74,6 +74,77 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Chatbot booking assistant functionality (storage + parking pages)
+    const chatbotWidgets = document.querySelectorAll('.chatbot-widget');
+    if (chatbotWidgets.length) {
+        chatbotWidgets.forEach(widget => {
+            const toggleBtn = widget.querySelector('.chatbot-toggle');
+            const body = widget.querySelector('.chatbot-body');
+            const input = widget.querySelector('.chatbot-input');
+            const sendBtn = widget.querySelector('.chatbot-send');
+            const optionButtons = widget.querySelectorAll('.chat-option-btn');
+            const bookingUrl = widget.dataset.bookingUrl || '#';
+            const availableItems = Array.from(optionButtons).map(btn => btn.dataset.item.toLowerCase());
+
+            const addMessage = (message, type = 'bot') => {
+                if (!body) return;
+                const msg = document.createElement('div');
+                msg.className = `chat-message ${type}`;
+                msg.textContent = message;
+                body.appendChild(msg);
+                body.scrollTop = body.scrollHeight;
+            };
+
+            const redirectToBooking = (selectedItem) => {
+                addMessage(`Great choice! Redirecting you to booking for "${selectedItem}"...`, 'bot');
+                const redirectUrl = `${bookingUrl}?item=${encodeURIComponent(selectedItem)}`;
+                setTimeout(() => {
+                    window.location.href = redirectUrl;
+                }, 900);
+            };
+
+            const processSelection = (selectedItem) => {
+                if (!selectedItem) return;
+
+                addMessage(selectedItem, 'user');
+                const normalized = selectedItem.trim().toLowerCase();
+
+                if (availableItems.includes(normalized)) {
+                    redirectToBooking(selectedItem.trim());
+                } else {
+                    addMessage('Sorry, I could not find that item in the current list. Please choose one of the options shown.', 'bot');
+                }
+            };
+
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', () => {
+                    widget.classList.toggle('open');
+                });
+            }
+
+            optionButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    processSelection(button.dataset.item || button.textContent);
+                });
+            });
+
+            if (sendBtn && input) {
+                sendBtn.addEventListener('click', () => {
+                    processSelection(input.value);
+                    input.value = '';
+                });
+
+                input.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        processSelection(input.value);
+                        input.value = '';
+                    }
+                });
+            }
+        });
+    }
+
     // Initialize map if available
     const mapElement = document.getElementById('map');
     if (mapElement && typeof google !== 'undefined') {

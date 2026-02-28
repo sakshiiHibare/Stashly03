@@ -518,6 +518,31 @@
         <i class="fab fa-whatsapp"></i>
     </a>
 
+    <!-- Chatbot Booking Assistant -->
+    <div class="chatbot-widget" data-chat-page="parking" data-booking-url="parkingbook.html">
+        <button class="chatbot-toggle" type="button" aria-label="Open parking booking assistant">
+            <i class="fas fa-comments"></i>
+        </button>
+        <div class="chatbot-panel" aria-live="polite">
+            <div class="chatbot-header">Parking Booking Assistant</div>
+            <div class="chatbot-body">
+                <div class="chat-message bot">Hi! Choose any parking item from the list below and I will take you to booking.</div>
+            </div>
+            <div class="chatbot-options">
+                <button type="button" class="chat-option-btn" data-item="Covered Parking Space">Covered Parking Space</button>
+                <button type="button" class="chat-option-btn" data-item="Underground Garage Parking">Underground Garage Parking</button>
+                <button type="button" class="chat-option-btn" data-item="Premium Parking Space">Premium Parking Space</button>
+                <button type="button" class="chat-option-btn" data-item="Open Parking Lot">Open Parking Lot</button>
+            </div>
+            <div class="chatbot-footer">
+                <input type="text" class="chatbot-input" placeholder="Type parking item name...">
+                <button type="button" class="chatbot-send" aria-label="Send message">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="footer bg-dark text-light mt-5">
         <div class="container">
