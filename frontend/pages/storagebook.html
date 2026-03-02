@@ -134,6 +134,13 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="mb-3">
+                                <div class="alert" id="availabilityStatus" style="display: none;"></div>
+                                <div class="d-flex flex-column flex-md-row gap-2 align-items-md-center" id="suggestedSlotContainer" style="display: none;">
+                                    <small id="suggestedSlotText" class="text-warning"></small>
+                                    <button type="button" class="btn btn-sm btn-outline-light" id="useSuggestedSlotBtn">Book Suggested Slot</button>
+                                </div>
+                            </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="spaceSize" class="form-label">Space Size Needed (sq.ft)</label>
@@ -214,12 +221,34 @@
             // Update end date minimum based on start date
             const startDateInput = document.getElementById('startDate');
             const endDateInput = document.getElementById('endDate');
+            const availabilityStatus = document.getElementById('availabilityStatus');
+            const suggestedSlotContainer = document.getElementById('suggestedSlotContainer');
+            const suggestedSlotText = document.getElementById('suggestedSlotText');
+            const useSuggestedSlotBtn = document.getElementById('useSuggestedSlotBtn');
+            let latestSuggestedSlot = null;
             
             startDateInput.addEventListener('change', function() {
                 endDateInput.min = startDateInput.value;
                 // If end date is before start date, reset it
                 if (endDateInput.value && endDateInput.value < startDateInput.value) {
                     endDateInput.value = startDateInput.value;
+                }
+                checkAvailabilityStatus();
+            });
+
+            endDateInput.addEventListener('change', checkAvailabilityStatus);
+
+            useSuggestedSlotBtn.addEventListener('click', function() {
+                if (!latestSuggestedSlot) return;
+
+                const suggestedStart = latestSuggestedSlot.startDate ? new Date(latestSuggestedSlot.startDate).toISOString().split('T')[0] : null;
+                const suggestedEnd = latestSuggestedSlot.endDate ? new Date(latestSuggestedSlot.endDate).toISOString().split('T')[0] : null;
+
+                if (suggestedStart && suggestedEnd) {
+                    startDateInput.value = suggestedStart;
+                    endDateInput.value = suggestedEnd;
+                    endDateInput.min = suggestedStart;
+                    checkAvailabilityStatus();
                 }
             });
             
@@ -239,6 +268,29 @@
                 
                 // Show loading state
                 setLoadingState(true);
+
+                try {
+                    const availability = await checkBookingAvailability({
+                        bookingType: 'storage',
+                        startDate: startDateInput.value,
+                        endDate: endDateInput.value
+                    });
+
+                    if (!availability.available) {
+                        renderAvailability(availability);
+                        const errorAlert = document.getElementById('errorAlert');
+                        errorAlert.textContent = 'Selected dates are already booked. Please choose the next suggested slot.';
+                        errorAlert.style.display = 'block';
+                        setLoadingState(false);
+                        return;
+                    }
+                } catch (availabilityError) {
+                    const errorAlert = document.getElementById('errorAlert');
+                    errorAlert.textContent = 'Could not check availability. Please try again.';
+                    errorAlert.style.display = 'block';
+                    setLoadingState(false);
+                    return;
+                }
                 
                 // Get form values
                 const name = document.getElementById('name').value;
@@ -353,6 +405,67 @@
                 
                 document.getElementById('successAlert').style.display = 'none';
                 document.getElementById('errorAlert').style.display = 'none';
+            }
+
+            async function checkAvailabilityStatus() {
+                if (!startDateInput.value || !endDateInput.value) {
+                    resetAvailabilityUI();
+                    return;
+                }
+
+                if (endDateInput.value < startDateInput.value) {
+                    return;
+                }
+
+                availabilityStatus.className = 'alert alert-info';
+                availabilityStatus.textContent = 'Checking availability...';
+                availabilityStatus.style.display = 'block';
+
+                try {
+                    const availability = await checkBookingAvailability({
+                        bookingType: 'storage',
+                        startDate: startDateInput.value,
+                        endDate: endDateInput.value
+                    });
+
+                    renderAvailability(availability);
+                } catch (error) {
+                    availabilityStatus.className = 'alert alert-danger';
+                    availabilityStatus.textContent = error.message || 'Unable to check availability right now.';
+                    availabilityStatus.style.display = 'block';
+                    suggestedSlotContainer.style.display = 'none';
+                }
+            }
+
+            function renderAvailability(availability) {
+                latestSuggestedSlot = availability?.suggestedSlot || null;
+
+                if (availability?.available) {
+                    availabilityStatus.className = 'alert alert-success';
+                    availabilityStatus.textContent = 'Available: This slot is free for booking.';
+                    availabilityStatus.style.display = 'block';
+                    suggestedSlotContainer.style.display = 'none';
+                    return;
+                }
+
+                availabilityStatus.className = 'alert alert-warning';
+                availabilityStatus.textContent = 'Booked: Another user has already booked this slot.';
+                availabilityStatus.style.display = 'block';
+
+                if (availability?.scheduleAfterCurrent && latestSuggestedSlot?.startDate && latestSuggestedSlot?.endDate) {
+                    const suggestedStart = new Date(latestSuggestedSlot.startDate).toLocaleDateString();
+                    const suggestedEnd = new Date(latestSuggestedSlot.endDate).toLocaleDateString();
+                    suggestedSlotText.textContent = `Next available schedule: ${suggestedStart} to ${suggestedEnd}`;
+                    suggestedSlotContainer.style.display = 'flex';
+                } else {
+                    suggestedSlotContainer.style.display = 'none';
+                }
+            }
+
+            function resetAvailabilityUI() {
+                availabilityStatus.style.display = 'none';
+                suggestedSlotContainer.style.display = 'none';
+                latestSuggestedSlot = null;
             }
             
             function showInvalidFeedback(element, feedbackId) {
