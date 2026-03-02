@@ -19,39 +19,117 @@ const createBookingLimiter = rateLimit({
   legacyHeaders: false
 });
 
-// Middleware to check for listing availability
+const startOfDay = (date) => {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+const addDays = (date, days) => {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+};
+
+const isRangeOverlap = (startA, endA, startB, endB) => {
+  return startA <= endB && endA >= startB;
+};
+
+const getScopeQuery = ({ listingId, bookingType }) => {
+  if (listingId) {
+    return { listingId };
+  }
+  return { bookingType };
+};
+
+const getConflicts = async ({ listingId, bookingType, bookingStart, bookingEnd }) => {
+  const scopeQuery = getScopeQuery({ listingId, bookingType });
+
+  return Booking.find({
+    ...scopeQuery,
+    status: { $ne: 'cancelled' },
+    startDate: { $lte: bookingEnd },
+    endDate: { $gte: bookingStart }
+  })
+    .select('startDate endDate bookingType listingId')
+    .sort({ startDate: 1 });
+};
+
+const getSuggestedSlot = async ({ listingId, bookingType, bookingStart, bookingEnd }) => {
+  const scopeQuery = getScopeQuery({ listingId, bookingType });
+
+  const allRelevantBookings = await Booking.find({
+    ...scopeQuery,
+    status: { $ne: 'cancelled' },
+    endDate: { $gte: startOfDay(bookingStart) }
+  })
+    .select('startDate endDate')
+    .sort({ startDate: 1 });
+
+  const durationMs = bookingEnd.getTime() - bookingStart.getTime();
+  let candidateStart = startOfDay(bookingStart);
+  let candidateEnd = new Date(candidateStart.getTime() + durationMs);
+
+  for (const existingBooking of allRelevantBookings) {
+    const existingStart = new Date(existingBooking.startDate);
+    const existingEnd = new Date(existingBooking.endDate);
+
+    if (isRangeOverlap(candidateStart, candidateEnd, existingStart, existingEnd)) {
+      candidateStart = addDays(startOfDay(existingEnd), 1);
+      candidateEnd = new Date(candidateStart.getTime() + durationMs);
+    }
+  }
+
+  return {
+    startDate: candidateStart,
+    endDate: candidateEnd
+  };
+};
+
+// Middleware to check for listing/slot availability
 const checkAvailability = async (req, res, next) => {
   try {
-    const { listingId, startDate, endDate } = req.body;
+    const { listingId, bookingType, startDate, endDate } = req.body;
     
-    // Skip check if listing ID is not provided
-    if (!listingId) {
-      return next();
-    }
-
-    // Validate MongoDB ObjectId format
-    if (!mongoose.Types.ObjectId.isValid(listingId)) {
+    if (!listingId && !bookingType) {
       return res.status(400).json({
         status: 'error',
-        message: 'Invalid listing ID format'
+        message: 'bookingType is required when listingId is not provided'
       });
     }
 
-    // Check if listing exists
-    const listing = await Listing.findById(listingId);
-    if (!listing) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Listing not found'
-      });
-    }
-
-    // Check if listing is available
-    if (listing.status !== 'active') {
+    if (!listingId && !['parking', 'storage'].includes(bookingType)) {
       return res.status(400).json({
         status: 'error',
-        message: 'This listing is not currently available for booking'
+        message: 'bookingType must be either parking or storage'
       });
+    }
+
+    if (listingId) {
+      // Validate MongoDB ObjectId format
+      if (!mongoose.Types.ObjectId.isValid(listingId)) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Invalid listing ID format'
+        });
+      }
+
+      // Check if listing exists
+      const listing = await Listing.findById(listingId);
+      if (!listing) {
+        return res.status(404).json({
+          status: 'error',
+          message: 'Listing not found'
+        });
+      }
+
+      // Check if listing is available
+      if (listing.status !== 'active') {
+        return res.status(400).json({
+          status: 'error',
+          message: 'This listing is not currently available for booking'
+        });
+      }
     }
 
     // Validate and convert dates
@@ -71,21 +149,26 @@ const checkAvailability = async (req, res, next) => {
     }
 
     // Check for booking conflicts
-    const conflictingBookings = await Booking.find({
+    const conflictingBookings = await getConflicts({
       listingId,
-      status: { $ne: 'cancelled' },
-      $or: [
-        { 
-          startDate: { $lte: bookingEnd },
-          endDate: { $gte: bookingStart }
-        }
-      ]
-    }).select('startDate endDate');
+      bookingType,
+      bookingStart,
+      bookingEnd
+    });
 
     if (conflictingBookings.length > 0) {
+      const suggestedSlot = await getSuggestedSlot({
+        listingId,
+        bookingType,
+        bookingStart,
+        bookingEnd
+      });
+
       return res.status(409).json({
         status: 'error',
-        message: 'This listing is already booked for the selected dates',
+        message: 'Selected slot is already booked',
+        scheduleAfterCurrent: true,
+        suggestedSlot,
         conflicts: conflictingBookings.map(booking => ({
           startDate: booking.startDate,
           endDate: booking.endDate
@@ -103,6 +186,127 @@ const checkAvailability = async (req, res, next) => {
     });
   }
 };
+
+// @route   GET /api/bookings/availability
+// @desc    Check availability for parking/storage bookings and suggest next slot if booked
+// @access  Public
+router.get('/availability', async (req, res) => {
+  try {
+    const { listingId, bookingType, startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'startDate and endDate are required'
+      });
+    }
+
+    if (!listingId && !bookingType) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'bookingType is required when listingId is not provided'
+      });
+    }
+
+    if (!listingId && !['parking', 'storage'].includes(bookingType)) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'bookingType must be either parking or storage'
+      });
+    }
+
+    if (listingId) {
+      if (!mongoose.Types.ObjectId.isValid(listingId)) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Invalid listing ID format'
+        });
+      }
+
+      const listing = await Listing.findById(listingId);
+      if (!listing) {
+        return res.status(404).json({
+          status: 'error',
+          message: 'Listing not found'
+        });
+      }
+
+      if (listing.status !== 'active') {
+        return res.json({
+          status: 'success',
+          available: false,
+          availabilityStatus: 'unavailable',
+          scheduleAfterCurrent: false,
+          message: 'This listing is not currently available for booking',
+          conflicts: [],
+          suggestedSlot: null
+        });
+      }
+    }
+
+    const bookingStart = new Date(startDate);
+    const bookingEnd = new Date(endDate);
+
+    if (isNaN(bookingStart.getTime()) || isNaN(bookingEnd.getTime())) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid date format. Please use YYYY-MM-DD format.'
+      });
+    }
+
+    if (bookingEnd < bookingStart) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'endDate must be after or equal to startDate'
+      });
+    }
+
+    const conflictingBookings = await getConflicts({
+      listingId,
+      bookingType,
+      bookingStart,
+      bookingEnd
+    });
+
+    if (conflictingBookings.length === 0) {
+      return res.json({
+        status: 'success',
+        available: true,
+        availabilityStatus: 'available',
+        scheduleAfterCurrent: false,
+        message: 'Slot available for selected dates',
+        conflicts: [],
+        suggestedSlot: null
+      });
+    }
+
+    const suggestedSlot = await getSuggestedSlot({
+      listingId,
+      bookingType,
+      bookingStart,
+      bookingEnd
+    });
+
+    return res.json({
+      status: 'success',
+      available: false,
+      availabilityStatus: 'booked',
+      scheduleAfterCurrent: true,
+      message: 'Slot already booked for selected dates',
+      conflicts: conflictingBookings.map(booking => ({
+        startDate: booking.startDate,
+        endDate: booking.endDate
+      })),
+      suggestedSlot
+    });
+  } catch (err) {
+    console.error('Availability endpoint error:', err.message);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Server error checking availability'
+    });
+  }
+});
 
 // @route   POST /api/bookings
 // @desc    Create a new booking
