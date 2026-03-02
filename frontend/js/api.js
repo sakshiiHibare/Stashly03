@@ -83,6 +83,36 @@ async function createBooking(bookingData) {
   }
 }
 
+// Check booking availability for selected date range
+async function checkBookingAvailability({ bookingType, startDate, endDate, listingId }) {
+  try {
+    const query = new URLSearchParams({
+      bookingType,
+      startDate,
+      endDate,
+      ...(listingId ? { listingId } : {})
+    });
+
+    const response = await fetch(`${API_URL}/bookings/availability?${query.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Availability check failed');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Availability check error:', error);
+    throw error;
+  }
+}
+
 // Logout User
 function logoutUser() {
   localStorage.removeItem('user');
