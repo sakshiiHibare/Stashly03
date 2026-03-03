@@ -214,6 +214,9 @@
     <script src="../js/api.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            if (!localStorage.getItem('token')) {
+  window.location.href = 'login.html';
+}
             // Set minimum date to today for start date input
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('startDate').min = today;
