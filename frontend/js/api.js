@@ -3,6 +3,15 @@
 // Base API URL
 // - Local development: use local backend
 // - Production/deployed frontend: use Render backend
+
+function getAuthHeaders() {
+  const token = localStorage.getItem('token');
+  if (!token) return {};
+
+  return {
+    'Authorization': `Bearer ${token}`
+  };
+}
 const API_URL = (
   window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
 )
@@ -50,8 +59,8 @@ async function loginUser(credentials) {
     }
     
     // Store user data in localStorage for session management
-    localStorage.setItem('user', JSON.stringify(data.user));
-    
+localStorage.setItem('user', JSON.stringify(data.user));
+localStorage.setItem('token', data.token);    
     return data;
   } catch (error) {
     console.error('Login error:', error);
@@ -64,9 +73,10 @@ async function createBooking(bookingData) {
   try {
     const response = await fetch(`${API_URL}/bookings`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+  headers: {
+  'Content-Type': 'application/json',
+  ...getAuthHeaders()
+},
       body: JSON.stringify(bookingData),
     });
     
@@ -95,9 +105,10 @@ async function checkBookingAvailability({ bookingType, startDate, endDate, listi
 
     const response = await fetch(`${API_URL}/bookings/availability?${query.toString()}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
+  headers: {
+  'Content-Type': 'application/json',
+  ...getAuthHeaders()
+}
     });
 
     const data = await response.json();
