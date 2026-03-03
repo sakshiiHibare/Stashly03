@@ -105,14 +105,14 @@ const checkAvailability = async (req, res, next) => {
       });
     }
 
-    if (listingId) {
-      // Validate MongoDB ObjectId format
-      if (!mongoose.Types.ObjectId.isValid(listingId)) {
-        return res.status(400).json({
-          status: 'error',
-          message: 'Invalid listing ID format'
-        });
-      }
+if (typeof listingId === 'string' && listingId.trim().length > 0) {
+  if (!mongoose.Types.ObjectId.isValid(listingId)) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Invalid listing ID format'
+    });
+  }
+}
 
       // Check if listing exists
       const listing = await Listing.findById(listingId);
