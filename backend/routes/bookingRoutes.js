@@ -105,33 +105,32 @@ const checkAvailability = async (req, res, next) => {
       });
     }
 
+// Validate listingId ONLY if provided
 if (typeof listingId === 'string' && listingId.trim().length > 0) {
+
   if (!mongoose.Types.ObjectId.isValid(listingId)) {
     return res.status(400).json({
       status: 'error',
       message: 'Invalid listing ID format'
     });
   }
+
+  const listing = await Listing.findById(listingId);
+
+  if (!listing) {
+    return res.status(404).json({
+      status: 'error',
+      message: 'Listing not found'
+    });
+  }
+
+  if (listing.status !== 'active') {
+    return res.status(400).json({
+      status: 'error',
+      message: 'This listing is not currently available for booking'
+    });
+  }
 }
-
-      // Check if listing exists
-      const listing = await Listing.findById(listingId);
-      if (!listing) {
-        return res.status(404).json({
-          status: 'error',
-          message: 'Listing not found'
-        });
-      }
-
-      // Check if listing is available
-      if (listing.status !== 'active') {
-        return res.status(400).json({
-          status: 'error',
-          message: 'This listing is not currently available for booking'
-        });
-      }
-    }
-
     // Validate and convert dates
     let bookingStart, bookingEnd;
     try {
