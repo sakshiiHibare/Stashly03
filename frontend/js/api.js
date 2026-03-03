@@ -96,12 +96,17 @@ async function createBooking(bookingData) {
 // Check booking availability for selected date range
 async function checkBookingAvailability({ bookingType, startDate, endDate, listingId }) {
   try {
-    const query = new URLSearchParams({
-      bookingType,
-      startDate,
-      endDate,
-      ...(listingId ? { listingId } : {})
-    });
+const params = {
+  bookingType,
+  startDate,
+  endDate
+};
+
+if (listingId && listingId.trim() !== '') {
+  params.listingId = listingId;
+}
+
+const query = new URLSearchParams(params);
 
     const response = await fetch(`${API_URL}/bookings/availability?${query.toString()}`, {
       method: 'GET',
